@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import { Link, NavLink, Route, Routes, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, statusLabel } from "./api";
 import { AreaMap, ClinicMap, directionsUrl, PlacePicker } from "./mapui";
@@ -19,14 +19,15 @@ function Shell({ children }: { children: ReactNode }) {
           <NavLink to="/nearby">Map</NavLink>
           <NavLink to="/pricing">Pricing</NavLink>
           <NavLink to="/for-clinics">For clinics</NavLink>
-          {user && <NavLink to="/appointments">My visits</NavLink>}
-          {user && <NavLink to="/token">My token</NavLink>}
+          {user?.role === "admin" && <NavLink to="/admin">Admin panel</NavLink>}
+          {user && user.role !== "admin" && <NavLink to="/appointments">My visits</NavLink>}
+          {user && user.role !== "admin" && <NavLink to="/token">My token</NavLink>}
         </nav>
         <div className="nav-end">
           {user ? (
             <>
               <Bell />
-              <Link to="/profile" className="who">
+              <Link to={user.role === "admin" ? "/admin" : "/profile"} className="who">
                 {user.name.split(" ")[0]}
               </Link>
               <button className="btn btn-ghost tiny" onClick={logout}>
@@ -205,16 +206,27 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const openedAdmin = useRef(false);
+
+  function openAdmin() {
+    if (openedAdmin.current || window.location.pathname === "/admin") return;
+    openedAdmin.current = true;
+    window.history.replaceState(window.history.state, "", "/");
+    nav("/admin");
+  }
 
   useEffect(() => {
-    if (user) nav("/", { replace: true });
+    if (!user || window.location.pathname !== "/login") return;
+    if (user.role === "admin") openAdmin();
+    else nav(params.get("next") || "/", { replace: true });
   }, [user]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     try {
-      await login(email, password);
-      nav(params.get("next") || "/");
+      const account = await login(email, password);
+      if (account?.role === "admin") openAdmin();
+      else nav(params.get("next") || "/", { replace: true });
     } catch (err: any) {
       setError(err.message);
     }

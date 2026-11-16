@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { useAuth } from "./auth";
 import { Logo, Wordmark } from "./bits";
 import { PatientWeb } from "./web";
@@ -16,14 +16,14 @@ function Splash() {
 
 export function App() {
   const { user, loading } = useAuth();
+  const { pathname } = useLocation();
   if (loading) return <Splash />;
   if (user?.role === "doctor") return <DoctorDash />;
   if (user?.role === "receptionist") return <ReceptionDash />;
-  if (user?.role === "admin") return <AdminDash />;
+  if (user?.role === "admin" && pathname.startsWith("/admin")) return <AdminDash />;
   return (
     <Routes>
       <Route path="/*" element={<PatientWeb />} />
-      <Route path="/desk" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

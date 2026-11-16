@@ -21,8 +21,14 @@ function Desk({
   const { user, logout } = useAuth();
   const nav = useNavigate();
   useEffect(() => {
+    if (title === "Super admin") {
+      if (window.location.pathname === "/admin" && (window.history.state?.idx ?? 0) > 0) return;
+      window.history.replaceState(window.history.state, "", "/");
+      nav("/admin");
+      return;
+    }
     if (window.location.pathname !== "/") nav("/", { replace: true });
-  }, []);
+  }, [title]);
   return (
     <div className="dash">
       <aside className="side">
@@ -31,6 +37,11 @@ function Desk({
           <Wordmark />
         </div>
         <small className="side-kicker">{title}</small>
+        {title === "Super admin" && (
+          <button className="side-link" onClick={() => nav("/")}>
+            Main page
+          </button>
+        )}
         {items.map((item) => (
           <button key={item} className={tab === item ? "side-link on" : "side-link"} onClick={() => setTab(item)}>
             {item}
