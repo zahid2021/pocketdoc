@@ -7,6 +7,12 @@ import { Avatar, Bell, Credit, DemoAccounts, ErrorText, LiveBadge, Logo, Stars, 
 
 function Shell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (user?.role !== "admin" || sessionStorage.getItem("pd_admin_enter") !== "1") return;
+    sessionStorage.removeItem("pd_admin_enter");
+    nav("/admin");
+  }, [user]);
   return (
     <div className="site">
       <header className="site-nav">
@@ -211,8 +217,8 @@ function Login() {
   function openAdmin() {
     if (openedAdmin.current || window.location.pathname === "/admin") return;
     openedAdmin.current = true;
-    window.history.replaceState(window.history.state, "", "/");
-    nav("/admin");
+    sessionStorage.setItem("pd_admin_enter", "1");
+    nav("/", { replace: true });
   }
 
   useEffect(() => {
