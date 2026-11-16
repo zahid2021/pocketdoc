@@ -2,12 +2,11 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api, statusLabel } from "./api";
 import { AreaMap, ClinicMap, directionsUrl, PlacePicker } from "./mapui";
-import { useAuth, useLayout } from "./auth";
+import { useAuth } from "./auth";
 import { Avatar, Bell, Credit, DemoAccounts, ErrorText, LiveBadge, Logo, Stars, Wait, Wordmark } from "./bits";
 
 function Shell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
-  const { setMode } = useLayout();
   return (
     <div className="site">
       <header className="site-nav">
@@ -53,9 +52,6 @@ function Shell({ children }: { children: ReactNode }) {
           <p>Your Turn. Our Priority. Ab wait nahi, sirf update.</p>
           <Credit />
         </div>
-        <button className="btn btn-ghost tiny" onClick={() => setMode("mobile")}>
-          Open mobile app view
-        </button>
         <small>Live waiting time and queue management for clinics and hospitals.</small>
       </footer>
     </div>
@@ -664,7 +660,6 @@ function Appointments() {
 
 function Profile() {
   const { user, refresh, logout } = useAuth();
-  const { setMode } = useLayout();
   const [plans, setPlans] = useState<any[]>([]);
   const [favs, setFavs] = useState<any[]>([]);
   const [form, setForm] = useState({ name: user?.name || "", phone: user?.phone || "", city: user?.city || "Lahore" });
@@ -729,9 +724,6 @@ function Profile() {
             </div>
           </Link>
         ))}
-        <button className="btn btn-ghost" onClick={() => setMode("mobile")}>
-          Switch to mobile app design
-        </button>
         <button className="btn btn-ghost" onClick={logout}>
           Log out
         </button>

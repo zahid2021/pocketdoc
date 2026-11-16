@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { useAuth, useLayout } from "./auth";
+import { useAuth } from "./auth";
 import { Logo, Wordmark } from "./bits";
-import { PatientMobile } from "./mobile";
 import { PatientWeb } from "./web";
 import { AdminDash, DoctorDash, ReceptionDash } from "./dash";
 
@@ -17,14 +16,13 @@ function Splash() {
 
 export function App() {
   const { user, loading } = useAuth();
-  const { phone } = useLayout();
   if (loading) return <Splash />;
   if (user?.role === "doctor") return <DoctorDash />;
   if (user?.role === "receptionist") return <ReceptionDash />;
   if (user?.role === "admin") return <AdminDash />;
   return (
     <Routes>
-      <Route path="/*" element={phone ? <PatientMobile /> : <PatientWeb />} />
+      <Route path="/*" element={<PatientWeb />} />
       <Route path="/desk" element={<Navigate to="/" replace />} />
     </Routes>
   );
