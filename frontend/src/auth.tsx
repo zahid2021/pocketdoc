@@ -91,3 +91,16 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 export function useLayout() {
   return useContext(LayoutContext);
 }
+
+export function isPocketDocApp() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("app") === "1" || navigator.userAgent.includes("PocketDocAndroid")) {
+      localStorage.setItem("pocketdoc_app", "1");
+    }
+    if (localStorage.getItem("pocketdoc_app") === "1") return true;
+  } catch {
+    return false;
+  }
+  return /\bwv\b/.test(navigator.userAgent);
+}

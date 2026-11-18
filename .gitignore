@@ -4,3 +4,9 @@ frontend/dist/
 backend/data/*.db
 __pycache__/
 *.pyc
+.android-build/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk

@@ -37,16 +37,15 @@ function TabBar() {
 }
 
 export function PatientMobile() {
-  const { user } = useAuth();
   const { width, mode } = useLayout();
   const loc = useLocation();
   const staged = mode === "mobile" && width > 880;
-  const showTabs = !!user && ["/", "/appointments", "/profile", "/nearby", "/pricing"].includes(loc.pathname);
+  const showTabs = ["/", "/appointments", "/profile", "/nearby", "/pricing"].includes(loc.pathname);
   return (
     <div className={staged ? "phone-app staged" : "phone-app"}>
       <div className="phone-scroll">
         <Routes>
-          <Route path="/" element={user ? <Home /> : <Welcome />} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/search" element={<Search />} />
@@ -237,7 +236,6 @@ function Home() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [q, setQ] = useState("");
-  if (!user) return <Welcome />;
   return (
     <div className="m-home">
       <header className="m-top">
@@ -249,9 +247,11 @@ function Home() {
       </header>
       <h1 className="hero-urdu">Apni turn ka wait ghar se dekhein</h1>
       <p className="lead">Find doctors, check live queue and save your time.</p>
-      <p className="muted">
-        {user.area_district ? `${user.city} · ${user.area_district} district` : user.city}. Open the map to see clinic pins.
-      </p>
+      {user && (
+        <p className="muted">
+          {user.area_district ? `${user.city} · ${user.area_district} district` : user.city}. Open the map to see clinic pins.
+        </p>
+      )}
       <form
         className="search-pill"
         onSubmit={(event) => {
@@ -270,14 +270,14 @@ function Home() {
           <b>Find Doctor</b>
           <small>Search by name, specialty or clinic</small>
         </Link>
-        <Link to="/appointments" className="tile">
+        <Link to={user ? "/appointments" : "/login?next=/appointments"} className="tile">
           <span className="bubble teal">
             <Icon d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
           </span>
           <b>My Appointments</b>
           <small>View your booked appointments</small>
         </Link>
-        <Link to="/token" className="tile">
+        <Link to={user ? "/token" : "/login?next=/token"} className="tile">
           <span className="bubble violet">
             <Icon d="M8 6h8M8 12h8M8 18h5" />
           </span>
@@ -330,10 +330,21 @@ function Search({ nearby = false }: { nearby?: boolean }) {
   const [at, setAt] = useState(Date.now());
 
   async function load(query = q, filter = kind) {
-    if (!user) return;
     try {
-      const next = await api<any>(`/api/doctors?q=${encodeURIComponent(query)}&kind=${filter}`);
-      setData(next);
+      if (!user) {
+        const featured = await api<any[]>("/api/doctors/featured", {}, false);
+        const needle = query.trim().toLowerCase();
+        const results = featured.filter((doctor) => {
+          if (filter === "clinic" || filter === "hospital") {
+            if (doctor.clinic?.kind !== filter) return false;
+          }
+          const blob = `${doctor.name} ${doctor.specialty} ${doctor.clinic?.name || ""} ${doctor.clinic?.address || ""}`.toLowerCase();
+          return !needle || blob.includes(needle);
+        });
+        setData({ results, radius_km: null, city: "" });
+      } else {
+        setData(await api<any>(`/api/doctors?q=${encodeURIComponent(query)}&kind=${filter}`));
+      }
       setAt(Date.now());
       setError("");
     } catch (err: any) {
@@ -342,23 +353,10 @@ function Search({ nearby = false }: { nearby?: boolean }) {
   }
 
   useEffect(() => {
-    if (!user) return;
     load();
     const id = setInterval(() => load(), 5000);
     return () => clearInterval(id);
   }, [user, q, kind]);
-
-  if (!user) {
-    return (
-      <div className="auth-screen">
-        <h2>Sign in to search</h2>
-        <p className="muted">Live queues are shown inside your subscription radius.</p>
-        <Link className="btn btn-primary btn-block" to="/login?next=/search">
-          Sign in
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div className="m-page">
@@ -407,7 +405,9 @@ function Search({ nearby = false }: { nearby?: boolean }) {
         ))}
       </div>
       <p className="radius-note">
-        Token booking stays inside {data?.radius_km || user.plan?.radius_km || 2} km of {user.city}. Clinics in {user.area_district || "your district"} still show so you can see the location.
+        {user
+          ? `Token booking stays inside ${data?.radius_km || user.plan?.radius_km || 2} km of ${user.city}. Clinics in ${user.area_district || "your district"} still show so you can see the location.`
+          : "Sign in to book a token and see the live queue inside your plan radius."}
       </p>
       <ErrorText>{error}</ErrorText>
       <div className="stack">
@@ -829,7 +829,6 @@ function Appointments() {
 
 function Profile() {
   const { user, logout, refresh } = useAuth();
-  const { setMode } = useLayout();
   const nav = useNavigate();
   const [plans, setPlans] = useState<any[]>([]);
   const [favs, setFavs] = useState<any[]>([]);
@@ -938,9 +937,6 @@ function Profile() {
       ))}
       {favs.length === 0 && <p className="muted">Save a doctor from their profile.</p>}
       <Credit />
-      <button className="btn btn-ghost btn-block" onClick={() => setMode("desktop")}>
-        Open desktop website
-      </button>
       <button
         className="btn btn-ghost btn-block"
         onClick={() => {

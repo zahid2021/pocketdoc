@@ -96,6 +96,8 @@ label { display: flex; flex-direction: column; gap: 6px; font-size: 0.86rem; fon
   position: relative;
 }
 body.layout-mobile { background: #e7eef8; }
+body.native-app { background: #f7faff; margin: 0; }
+body.native-app .phone-app { width: 100%; max-width: none; height: 100dvh; border: 0; border-radius: 0; margin: 0; box-shadow: none; }
 .phone-app.staged {
   height: calc(100dvh - 28px);
   margin-top: 14px;

@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { useAuth } from "./auth";
+import { isPocketDocApp, useAuth } from "./auth";
 import { Logo, Wordmark } from "./bits";
+import { PatientMobile } from "./mobile";
 import { PatientWeb } from "./web";
 import { AdminDash, DoctorDash, ReceptionDash } from "./dash";
 
@@ -17,10 +19,21 @@ function Splash() {
 export function App() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
+  const native = isPocketDocApp();
+  useEffect(() => {
+    document.body.classList.toggle("native-app", native);
+  }, [native]);
   if (loading) return <Splash />;
   if (user?.role === "doctor") return <DoctorDash />;
   if (user?.role === "receptionist") return <ReceptionDash />;
   if (user?.role === "admin" && pathname.startsWith("/admin")) return <AdminDash />;
+  if (native && user?.role !== "admin") {
+    return (
+      <Routes>
+        <Route path="/*" element={<PatientMobile />} />
+      </Routes>
+    );
+  }
   return (
     <Routes>
       <Route path="/*" element={<PatientWeb />} />
