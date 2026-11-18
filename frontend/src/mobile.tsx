@@ -5,6 +5,24 @@ import { useAuth, useLayout } from "./auth";
 import { Avatar, Bell, Credit, DemoAccounts, ErrorText, LiveBadge, Logo, Stars, Wait, Wordmark } from "./bits";
 import { AreaMap, ClinicMap, directionsUrl, PlacePicker } from "./mapui";
 
+function WatchIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 9v3.2l2 1.4M9 3.5h6M9 20.5h6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RefreshIcon({ spin }: { spin?: boolean }) {
+  return (
+    <svg className={spin ? "spin" : ""} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M20 12a8 8 0 1 1-2.2-5.5" strokeLinecap="round" />
+      <path d="M20 4v5h-5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function Icon({ d }: { d: string }) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -634,6 +652,8 @@ function TokenScreen() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updated, setUpdated] = useState(false);
 
   async function load() {
     if (!user) return;
@@ -642,6 +662,17 @@ function TokenScreen() {
       setAt(Date.now());
     } catch (err: any) {
       setError(err.message);
+    }
+  }
+
+  async function reload() {
+    setRefreshing(true);
+    setUpdated(false);
+    try {
+      await load();
+      setUpdated(true);
+    } finally {
+      setRefreshing(false);
     }
   }
 
@@ -693,8 +724,8 @@ function TokenScreen() {
           ←
         </button>
         <h2>Your Token</h2>
-        <button className="icon-btn light" onClick={load} aria-label="Refresh">
-          ↻
+        <button className="icon-btn light" type="button" onClick={reload} aria-label="Refresh">
+          <RefreshIcon spin={refreshing} />
         </button>
       </header>
       {!token && <div className="empty light">You have no token yet. Book a doctor to join a queue.</div>}
@@ -732,19 +763,24 @@ function TokenScreen() {
             </div>
           </div>
           <div className="wait-card">
-            <span className="clock">⏱</span>
+            <span className="clock" aria-hidden="true">
+              <WatchIcon />
+            </span>
             <div>
               <small>Estimated Waiting Time</small>
               <b>
                 {token.status === "in_consultation" ? (
                   "Now"
+                ) : token.queue_status !== "running" ? (
+                  token.queue_status === "paused" ? "Paused" : "Not started"
                 ) : (
                   <Wait seconds={token.est_seconds} ticking={token.ticking} at={at} />
                 )}
               </b>
+              {updated && <small className="updated">Updated</small>}
             </div>
-            <button onClick={load} aria-label="Refresh estimate">
-              ↻
+            <button type="button" onClick={reload} aria-label="Refresh estimate" disabled={refreshing}>
+              <RefreshIcon spin={refreshing} />
             </button>
           </div>
           {token.queue_status === "paused" && <div className="hold">Queue paused · {token.pause_reason}. The estimate is on hold.</div>}

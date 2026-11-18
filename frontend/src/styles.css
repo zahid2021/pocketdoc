@@ -224,18 +224,27 @@ body.native-app .phone-app { width: 100%; max-width: none; height: 100dvh; borde
 }
 .token-screen .fine { color: rgba(255,255,255,.8); font-size: 0.8rem; }
 .ring-wrap { position: relative; width: 250px; height: 250px; margin: 10px auto 18px; }
-.ring-wrap svg { width: 100%; height: 100%; }
+.ring-wrap svg { width: 100%; height: 100%; pointer-events: none; }
 .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .ring-label span { opacity: .85; }
 .ring-label strong { font-size: 3.2rem; letter-spacing: -0.05em; line-height: 1; }
 .ring-label em { font-style: normal; opacity: .9; }
 .wait-card {
+  position: relative; z-index: 2;
   background: white; color: var(--ink); border-radius: 22px; padding: 14px 16px;
-  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 12px; align-items: center;
 }
 .wait-card small { color: var(--muted); display: block; }
+.wait-card small.updated { color: var(--green); font-weight: 800; }
 .wait-card b { font-size: 1.7rem; }
-.wait-card button, .clock { width: 42px; height: 42px; border-radius: 14px; border: 0; background: #eef5ff; color: var(--blue); font-size: 1.2rem; }
+.wait-card button, .clock {
+  width: 44px; height: 44px; border-radius: 14px; border: 0; background: #eef5ff; color: var(--blue);
+  display: grid; place-items: center; position: relative; z-index: 3; cursor: pointer; padding: 0;
+}
+.wait-card button:disabled { opacity: 0.7; }
+.wait-card button svg, .clock svg, .icon-btn svg { pointer-events: none; }
+.spin { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .steps { list-style: none; padding: 0; margin: 18px 0; display: flex; flex-direction: column; gap: 12px; }
 .steps li { position: relative; padding-left: 28px; }
 .steps li::before { content: ""; position: absolute; left: 0; top: 4px; width: 14px; height: 14px; border-radius: 99px; border: 2px solid rgba(255,255,255,.7); }

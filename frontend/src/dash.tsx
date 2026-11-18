@@ -160,7 +160,7 @@ function Controls({ status, can, onStart, onPause, onResume, onNext }: any) {
           Resume
         </button>
       )}
-      <button className="btn btn-teal" onClick={onNext} disabled={status !== "running"}>
+      <button className="btn btn-teal" type="button" onClick={onNext} disabled={status !== "running"} title={status === "running" ? "Call the next patient" : "Start the queue before calling Next"}>
         Next
       </button>
       {open && (
