@@ -87,7 +87,8 @@ label { display: flex; flex-direction: column; gap: 6px; font-size: 0.86rem; fon
 .empty.light { background: rgba(255,255,255,.16); color: white; }
 
 .phone-app {
-  width: min(440px, 100%);
+  width: 100%;
+  max-width: 480px;
   height: 100dvh;
   margin: 0 auto;
   background: #f7faff;
@@ -106,7 +107,7 @@ body.native-app .phone-app { width: 100%; max-width: none; height: 100dvh; borde
   box-shadow: 0 24px 70px rgba(16, 42, 84, 0.18);
   border: 8px solid #101828;
 }
-.phone-scroll { flex: 1; overflow: auto; }
+.phone-scroll { flex: 1; overflow: auto; overflow-x: clip; }
 .tabbar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -188,13 +189,15 @@ body.native-app .phone-app { width: 100%; max-width: none; height: 100dvh; borde
 .live-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--green-bg); color: var(--green); border-radius: 999px; padding: 4px 8px; font-size: 0.75rem; font-weight: 800; }
 .live-badge i { width: 7px; height: 7px; border-radius: 99px; background: var(--green); display: block; }
 .chev { color: #9aadc2; font-size: 1.4rem; }
-.avatar { display: inline-grid; place-items: center; border-radius: 50%; color: white; font-weight: 800; flex: none; }
+.avatar { display: inline-grid; place-items: center; border-radius: 50%; overflow: hidden; flex: none; background: #e8f1fb; line-height: 0; }
+.avatar svg { display: block; width: 100%; height: 100%; }
 
-.profile-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.profile-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; min-width: 0; }
 .profile-head h1 { margin: 0 0 4px; font-size: 1.7rem; line-height: 1.15; }
 .web-doc > div:not(.web-doc-side) { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .profile-head b { display: block; font-size: 1.15rem; }
-.profile-head span, .profile-head p { display: block; margin: 2px 0; color: #607892; }
+.profile-head > div { min-width: 0; }
+.profile-head > div span, .profile-head p { display: block; margin: 2px 0; color: #607892; overflow-wrap: anywhere; }
 .soft-card, .card-block, .table-card, .plan {
   background: white; border-radius: 20px; padding: 16px; box-shadow: var(--shadow);
 }
@@ -397,7 +400,7 @@ body.native-app .phone-app { width: 100%; max-width: none; height: 100dvh; borde
   .hero-search .btn { text-align: center; }
   .preview-card strong { font-size: 2.6rem; }
   .hero, .panel, .narrow, .split { width: min(1120px, calc(100% - 24px)); }
-  .profile-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); }
+  .profile-head { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
   .profile-head h1 { font-size: 1.35rem; }
   .web-doc { grid-template-columns: auto minmax(0, 1fr); }
   .web-doc-side { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; width: 100%; }

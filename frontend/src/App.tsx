@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import { isPocketDocApp, useAuth } from "./auth";
+import { isPocketDocApp, useAuth, useLayout } from "./auth";
 import { Logo, Wordmark } from "./bits";
 import { PatientMobile } from "./mobile";
 import { PatientWeb } from "./web";
@@ -19,7 +19,8 @@ function Splash() {
 export function App() {
   const { user, loading } = useAuth();
   const { pathname } = useLocation();
-  const native = isPocketDocApp();
+  const { width } = useLayout();
+  const native = isPocketDocApp() || width <= 1180;
   useEffect(() => {
     document.body.classList.toggle("native-app", native);
   }, [native]);

@@ -33,23 +33,39 @@ export function Credit() {
   return <p className="credit">Developed by Engineer Zahid Mehmood</p>;
 }
 
-export function initials(name: string) {
-  const parts = (name || "").replace(/^Dr\.?\s+/i, "").split(" ").filter(Boolean);
-  return ((parts[0]?.[0] || "P") + (parts[1]?.[0] || "")).toUpperCase();
-}
-
-const COLORS = ["#1f6bff", "#12b5a0", "#7c6bf2", "#ef6d3a", "#0ea5e9", "#db4f8a"];
-
-export function avatarColor(name: string) {
+function hashName(name: string) {
   let hash = 0;
   for (const ch of name || "P") hash = (hash * 33 + ch.charCodeAt(0)) >>> 0;
-  return COLORS[hash % COLORS.length];
+  return hash;
 }
 
+const WOMEN = new Set("ayesha sana hina farah saima amina rabia hira saba fiza zahra maham sara noor".split(" "));
+
 export function Avatar({ name, size = 48 }: { name: string; size?: number }) {
+  const hash = hashName(name);
+  const first = (name || "").replace(/^Dr\.?\s+/i, "").split(/\s+/)[0]?.toLowerCase() || "";
+  const woman = WOMEN.has(first);
+  const skin = ["#f6d3b4", "#e7b892", "#d59a74", "#c4845a", "#8d5a3c"][hash % 5];
+  const hair = ["#241910", "#1a1a1a", "#4a3024", "#111827"][hash % 4];
+  const hijab = woman && hash % 3 !== 1;
   return (
-    <span className="avatar" style={{ width: size, height: size, background: avatarColor(name), fontSize: size * 0.34 }}>
-      {initials(name)}
+    <span className="avatar" style={{ width: size, height: size }} aria-label={name}>
+      <svg viewBox="0 0 80 80" width={size} height={size} aria-hidden="true">
+        <rect width="80" height="80" fill="#e8f1fb" />
+        <path d="M8 84c4-20 16-30 32-30s28 10 32 30" fill={hair} />
+        <path d="M18 62c2-10 10-16 22-16s20 6 22 16v22H18z" fill="#ffffff" />
+        <path d="M37 60h6l1.5 16h-9z" fill="#1a6dff" />
+        {hijab ? <path d="M14 42c2-24 12-32 26-32s24 8 26 32c-2 4-8 2-10-4-2 10-8 16-16 16s-14-6-16-16c-2 6-8 8-10 4z" fill={hair} /> : null}
+        {!hijab && woman ? <path d="M16 46c0-24 10-34 24-34s24 10 24 32c0 6-4 8-8 4-2 8-8 12-16 12s-14-4-16-12c-4 4-8 2-8-2z" fill={hair} /> : null}
+        {!hijab && !woman ? <path d="M20 40c0-18 8-28 20-28s20 10 20 26c0 4-4 6-6 2-1-8-5-12-14-12s-13 4-14 12c-3 4-6 2-6 0z" fill={hair} /> : null}
+        <circle cx="40" cy="38" r="14" fill={skin} />
+        {hijab ? <path d="M24 34c2-12 8-16 16-16s14 4 16 16c-6 3-12 4-16 4s-12-1-16-4z" fill={hair} /> : null}
+        {!hijab && woman ? <path d="M24 34c1-10 7-14 16-14 6 0 11 2 14 8-6 2-12 2-16 0-4 2-10 2-14 6z" fill={hair} /> : null}
+        {!hijab && !woman ? <path d="M26 32c1-8 6-12 14-12s13 4 14 12c-8 2-20 2-28 0z" fill={hair} /> : null}
+        <circle cx="34.5" cy="38" r="1.3" fill="#1c2430" />
+        <circle cx="45.5" cy="38" r="1.3" fill="#1c2430" />
+        <path d="M36 44c1.8 1.8 6.2 1.8 8 0" stroke="#a15d48" strokeWidth="1.15" fill="none" strokeLinecap="round" />
+      </svg>
     </span>
   );
 }

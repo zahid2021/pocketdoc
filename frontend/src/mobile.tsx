@@ -329,33 +329,39 @@ function Search({ nearby = false }: { nearby?: boolean }) {
   const [error, setError] = useState("");
   const [at, setAt] = useState(Date.now());
 
-  async function load(query = q, filter = kind) {
-    try {
-      if (!user) {
-        const featured = await api<any[]>("/api/doctors/featured", {}, false);
-        const needle = query.trim().toLowerCase();
-        const results = featured.filter((doctor) => {
-          if (filter === "clinic" || filter === "hospital") {
-            if (doctor.clinic?.kind !== filter) return false;
-          }
-          const blob = `${doctor.name} ${doctor.specialty} ${doctor.clinic?.name || ""} ${doctor.clinic?.address || ""}`.toLowerCase();
-          return !needle || blob.includes(needle);
-        });
-        setData({ results, radius_km: null, city: "" });
-      } else {
-        setData(await api<any>(`/api/doctors?q=${encodeURIComponent(query)}&kind=${filter}`));
-      }
-      setAt(Date.now());
-      setError("");
-    } catch (err: any) {
-      setError(err.message);
-    }
-  }
-
   useEffect(() => {
+    let current = true;
+    async function load() {
+      try {
+        if (!user) {
+          const featured = await api<any[]>("/api/doctors/featured", {}, false);
+          const needle = q.trim().toLowerCase();
+          const results = featured.filter((doctor) => {
+            if (kind === "clinic" || kind === "hospital") {
+              if (doctor.clinic?.kind !== kind) return false;
+            }
+            const blob = `${doctor.name} ${doctor.specialty} ${doctor.clinic?.name || ""} ${doctor.clinic?.address || ""}`.toLowerCase();
+            return !needle || blob.includes(needle);
+          });
+          if (current) setData({ results, radius_km: null, city: "" });
+        } else if (current) {
+          const next = await api<any>(`/api/doctors?q=${encodeURIComponent(q)}&kind=${kind}`);
+          if (current) setData(next);
+        }
+        if (current) {
+          setAt(Date.now());
+          setError("");
+        }
+      } catch (err: any) {
+        if (current) setError(err.message);
+      }
+    }
     load();
-    const id = setInterval(() => load(), 5000);
-    return () => clearInterval(id);
+    const id = setInterval(load, 5000);
+    return () => {
+      current = false;
+      clearInterval(id);
+    };
   }, [user, q, kind]);
 
   return (
